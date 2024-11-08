@@ -1,6 +1,6 @@
 import React from 'react'
 
-import {BrowserRouter as Router, Route, Switch} from "react-router-dom"
+import {BrowserRouter as Router, Route, Switch,Redirect} from "react-router-dom"
 import PrivateRoute from "./utils/PrivateRouter"
 import { AuthProvider } from './context/AuthContext'
 
@@ -9,6 +9,8 @@ import Registerpage from './views/Registerpage'
 import Loginpage from './views/Loginpage'
 import Dashboard from './views/Dashboard'
 import Navbar from './views/Navbar'
+import ProfileSettings from './views/ProfileSetting'
+
 
 
 
@@ -23,6 +25,7 @@ function App() {
           <Route component={Loginpage} path="/login" />
           <Route component={Registerpage} path="/register" exact />
           <Route component={Homepage} path="/homepage" exact />
+          <Route component={ProfileSettings} path="/profileSetting" exact />
         </Switch>
       </AuthProvider>
     </Router>

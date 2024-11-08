@@ -14,7 +14,7 @@ function Navbar() {
   }
 
   return (
-    <div>
+    <div class= "row">
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">
@@ -37,6 +37,7 @@ function Navbar() {
                 <li class="nav-item">
                   <Link class="nav-link" to="/register">Register</Link>
                 </li>
+                
               </>
               }
 
@@ -44,6 +45,9 @@ function Navbar() {
               <>
                 <li class="nav-item">
                   <a class="nav-link" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                  <Link class="nav-link" to="/profileSetting">Profile</Link>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" onClick={logoutUser} style={{cursor:"pointer"}}>Logout</a>
