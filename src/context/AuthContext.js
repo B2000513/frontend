@@ -55,6 +55,9 @@ export const AuthProvider = ({ children }) => {
                 showConfirmButton: false,
             })
 
+            history.push("/dashboard")
+            window.location.reload()
+
         } else {    
             console.log(response.status);
             console.log("there was a server issue");
@@ -105,6 +108,49 @@ export const AuthProvider = ({ children }) => {
             })
         }
     }
+    const updateProfile = async (profileData) => {
+        try {
+          const response = await axios.put("http://127.0.0.1:8000/api/profile/", profileData, {
+            headers: {
+              "Content-Type": "aplication/json",
+              Authorization: `Bearer ${authTokens.access}`,
+            },
+            body: JSON.stringify(profileData),
+          });
+    
+          const updatedUserData = response.data;
+    
+          // Update `user` state in AuthContext to reflect changes
+          setUser((prevUser) => ({
+            ...prevUser,
+            ...updatedUserData
+          }));
+    
+          Swal.fire({
+            title: "Profile Updated Successfully",
+            icon: "success",
+            toast: true,
+            timer: 6000,
+            position: 'top-right',
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+    
+        } catch (error) {
+          console.error("Profile update failed:", error);
+    
+          Swal.fire({
+            title: "Failed to Update Profile",
+            text: "An error occurred while updating the profile. Please try again.",
+            icon: "error",
+            toast: true,
+            timer: 6000,
+            position: 'top-right',
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+        }
+      };
 
     const logoutUser = () => {
         setAuthTokens(null)
@@ -120,6 +166,7 @@ export const AuthProvider = ({ children }) => {
             timerProgressBar: true,
             showConfirmButton: false,
         })
+        window.location.reload()
     }
 
     const contextData = {
@@ -130,6 +177,7 @@ export const AuthProvider = ({ children }) => {
         registerUser,
         loginUser,
         logoutUser,
+        updateProfile,
     }
 
     useEffect(() => {

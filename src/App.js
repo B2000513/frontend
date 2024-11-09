@@ -9,7 +9,7 @@ import Registerpage from './views/Registerpage'
 import Loginpage from './views/Loginpage'
 import Dashboard from './views/Dashboard'
 import Navbar from './views/Navbar'
-import ProfileSettings from './views/ProfileSetting'
+import ProfileSettings from './views/Profilesetting'
 
 
 
@@ -25,7 +25,7 @@ function App() {
           <Route component={Loginpage} path="/login" />
           <Route component={Registerpage} path="/register" exact />
           <Route component={Homepage} path="/homepage" exact />
-          <Route component={ProfileSettings} path="/profileSetting" exact />
+          <Route component={ProfileSettings} path="/profile" exact />
         </Switch>
       </AuthProvider>
     </Router>

@@ -1,120 +1,181 @@
-// src/components/ProfileSettings.js
-import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/useAxios";
-import { useHistory } from "react-router-dom";
+import React, { useContext, useState, useEffect } from 'react';
+import useAxios from '../utils/useAxios';
+import { useHistory } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import Swal from 'sweetalert2';
+import ChangePasswordForm from './ChangePasswordForm';
 
 const ProfileSettings = () => {
-    const [profileData, setProfileData] = useState({
-        full_name: "",
-        bio: "",
-        image: null,
-    });
-    const [previewImage, setPreviewImage] = useState(null);
-    const history = useHistory();
+  const axiosInstance = useAxios();
+  const { authTokens } = useContext(AuthContext);
+  const history = useHistory();
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            try {
-                const response = await axiosInstance.get("/profile/");
-                setProfileData(response.data);
-                setPreviewImage(response.data.image);
-            } catch (error) {
-                console.error("Error fetching profile data", error);
-            }
-        };
-        fetchProfileData();
-    }, []);
+  const [profileData, setProfileData] = useState({
+    full_name: "",
+    bio: "",
+    verified: false,
+    image: null,
+    imageUrl: null,
+  });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setProfileData((prevData) => ({ ...prevData, [name]: value }));
-    };
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        setProfileData((prevData) => ({ ...prevData, image: file }));
-        setPreviewImage(URL.createObjectURL(file));
-    };
+  // Fetch the profile data only once on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axiosInstance.get("/profile/");
+        const data = response.data;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData();
-        formData.append("full_name", profileData.full_name);
-        formData.append("bio", profileData.bio);
-        if (profileData.image) {
-            formData.append("image", profileData.image);
+        setProfileData({
+          full_name: data.full_name,
+          bio: data.bio,
+          verified: data.verified,
+          image: null,
+          imageUrl: data.image,
+        });
+
+        if (data.image) {
+          setImagePreview(data.image);
         }
 
-        try {
-            await axiosInstance.put("/profile/update/", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            alert("Profile updated successfully!");
-            history.push("/profile");
-        } catch (error) {
-            console.error("Error updating profile", error);
-        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+        setLoading(false);
+      }
     };
 
-    return (
-        <div className="container mt-5">
-            <h2 className="mb-4">Public Info</h2>
-            <form onSubmit={handleSubmit} className="row">
-                <div className="col-md-6">
-                    <div className="form-group mb-3">
-                        <label htmlFor="full_name">Username</label>
-                        <input
-                            type="text"
-                            name="full_name"
-                            className="form-control"
-                            placeholder="Username"
-                            value={profileData.full_name}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="form-group mb-3">
-                        <label htmlFor="bio">Biography</label>
-                        <textarea
-                            name="bio"
-                            className="form-control"
-                            placeholder="Tell something about yourself"
-                            value={profileData.bio}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <button type="submit" className="btn btn-primary">Save Changes</button>
-                </div>
-                
-                <div className="col-md-6 d-flex flex-column align-items-center">
-                    <div className="mb-3">
-                        {previewImage ? (
-                            <img src={previewImage} alt="Preview" className="rounded-circle" width="128" height="128" />
-                        ) : (
-                            <div className="rounded-circle bg-light d-flex align-items-center justify-content-center" style={{ width: "128px", height: "128px" }}>
-                                <span className="text-secondary">No Image</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="image" className="btn btn-outline-primary">
-                            <i className="fas fa-upload"></i> Upload Image
-                        </label>
-                        <input
-                            type="file"
-                            id="image"
-                            className="d-none"
-                            onChange={handleImageChange}
-                        />
-                    </div>
-                    <small className="form-text text-muted">
-                        For best results, use an image at least 128px by 128px in .jpg format
-                    </small>
-                </div>
-            </form>
-        </div>
-    );
+    fetchProfile();
+  }, []); // Empty array ensures it only runs once
+
+  const handleChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
+
+    setProfileData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : type === "file" ? files[0] : value,
+    }));
+
+    if (type === "file" && files.length > 0) {
+      setImagePreview(URL.createObjectURL(files[0]));
+    }
+  };
+
+  const updateProfile = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("full_name", profileData.full_name);
+      formData.append("bio", profileData.bio);
+      formData.append("verified", profileData.verified);
+
+      
+       // If a new image is uploaded, append it to the form data
+       if (profileData.image) {
+        formData.append("image", profileData.image);
+      }
+
+      const response = await axiosInstance.put("/profile/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProfileData((prevData) => ({
+        ...prevData,
+        imageUrl: response.data.image,
+      }));
+
+      // If a new image was uploaded, update the image preview
+      if (response.data.image) {
+        setImagePreview(response.data.image); // Update preview with new image URL
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile updated successfully!',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to update profile',
+        text: 'Please try again.',
+        confirmButtonText: 'Okay',
+      });
+      console.error("Failed to update profile:", error);
+    }
+  };
+
+  if (!authTokens) {
+    history.push("/login");
+    return null;
+  }
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="container my-5">
+      <h1 className="text-center mb-4">Update Profile</h1>
+      <div className="card p-4 shadow-sm mx-auto" style={{ maxWidth: "500px" }}>
+        <h2 className="card-title mb-4">Edit Profile</h2>
+        <form onSubmit={(e) => { e.preventDefault(); updateProfile(); }}>
+          <div className="mb-3">
+            <label htmlFor="full_name" className="form-label">Full Name</label>
+            <input
+              type="text"
+              name="full_name"
+              className="form-control"
+              value={profileData.full_name}
+              onChange={handleChange}
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="bio" className="form-label">Bio</label>
+            <textarea
+              name="bio"
+              className="form-control"
+              value={profileData.bio}
+              onChange={handleChange}
+              placeholder="Tell something about yourself"
+              rows="3"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="image" className="form-label">Profile Image</label>
+            <input
+              type="file"
+              name="image"
+              className="form-control"
+              onChange={handleChange}
+              accept="image/*"
+            />
+          </div>
+
+          {imagePreview && (
+            <div className="mb-3 text-center">
+              <img
+                src={imagePreview}
+                alt="Profile Preview"
+                className="img-thumbnail rounded-circle"
+                style={{ width: "150px", height: "150px", objectFit: "cover" }}
+              />
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-primary w-100">Save Changes</button>
+        </form>
+        <ChangePasswordForm />
+      </div>
+    </div>
+  );
 };
 
 export default ProfileSettings;
