@@ -10,6 +10,8 @@ import Loginpage from './views/Loginpage'
 import Dashboard from './views/Dashboard'
 import Navbar from './views/Navbar'
 import ProfileSettings from './views/Profilesetting'
+import PasswordResetConfirm from './views/PasswordResetConfirm'
+import PasswordResetRequest from './views/PasswordResetRequest'
 
 
 
@@ -19,13 +21,18 @@ function App() {
     
     <Router>
       <AuthProvider>
-        < Navbar/>
+        <Navbar/>
         <Switch>
           <PrivateRoute component={Dashboard} path="/dashboard" exact />
           <Route component={Loginpage} path="/login" />
           <Route component={Registerpage} path="/register" exact />
           <Route component={Homepage} path="/homepage" exact />
           <Route component={ProfileSettings} path="/profile" exact />
+          <Route component={PasswordResetRequest} path="/password-reset" exact />
+          <Route component={PasswordResetConfirm} path="/password-reset-confirm/:uid/:token" exact />
+
+        {/* Redirect unknown routes to homepage */}
+        <Redirect to="/login" />
         </Switch>
       </AuthProvider>
     </Router>

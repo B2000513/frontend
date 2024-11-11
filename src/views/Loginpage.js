@@ -1,21 +1,22 @@
-import React, { useContext } from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import AuthContext from '../context/AuthContext'
+import React, { useContext } from 'react';
+import { Link, useHistory } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 
 function Loginpage() {
-  const { loginUser } = useContext(AuthContext)
+  const { loginUser } = useContext(AuthContext);
   const history = useHistory();
   
   const handleSubmit = e => {
-    e.preventDefault()
-    const email = e.target.email.value
-    const password = e.target.password.value
-    email.length > 0 && loginUser(email, password)
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    if (email.length > 0) loginUser(email, password);
+  };
 
-    
-
-    
-  }
+  const handlePasswordReset = () => {
+    // Navigate to the Password Reset Request page
+    history.push('/password-reset');
+  };
 
   return (
     <div>
@@ -70,10 +71,11 @@ function Loginpage() {
                             Login
                           </button>
                         </div>
+                        {/* Update Forgot password to navigate to Password Reset */}
                         <button
                           className="small text-muted"
                           style={{ background: "none", border: "none", color: "#007bff", padding: 0, cursor: "pointer" }}
-                          onClick={() => console.log('Forgot password clicked')}
+                          onClick={handlePasswordReset}
                         >
                           Forgot password?
                         </button>
@@ -115,7 +117,7 @@ function Loginpage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-export default Loginpage
+export default Loginpage;
