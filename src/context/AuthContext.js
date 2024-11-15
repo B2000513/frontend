@@ -89,35 +89,56 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+
     const registerUser = async (email, username, password, password2) => {
-        const response = await fetch("http://127.0.0.1:8000/api/register/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                email,
-                username,
-                password,
-                password2,
-            }),
-        });
-        if (response.status === 201) {
-            history.push("/login");
-            swal.fire({
-                title: "Registration Successful, Login Now",
-                icon: "success",
-                toast: true,
-                timer: 6000,
-                position: "top-right",
-                timerProgressBar: true,
-                showConfirmButton: false,
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    username,
+                    password,
+                    password2,
+                }),
             });
-        } else {
-            console.log(response.status);
-            console.log("There was a server issue");
+    
+            const data = await response.json();
+            console.log("Registration response data:", data);
+    
+            if (response.status === 201) {
+                history.push("/login");  // Redirect on successful registration
+                swal.fire({
+                    title: "Registration Successful, Login Now",
+                    icon: "success",
+                    toast: true,
+                    timer: 6000,
+                    position: "top-right",
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                });
+            } else {
+                // Log the specific error message returned by the backend
+                console.error("Error:", data);
+                swal.fire({
+                    title: "An Error Occurred: " + response.status,
+                    text: data.detail || "Please check your inputs and try again.",
+                    icon: "error",
+                    toast: true,
+                    timer: 6000,
+                    position: "top-right",
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                });
+            }
+        } catch (error) {
+            // Handle network errors or JSON parsing errors
+            console.error("Network or JSON parsing error:", error);
             swal.fire({
-                title: "An Error Occurred " + response.status,
+                title: "Network Error",
+                text: "Unable to reach the server. Please check your connection and try again.",
                 icon: "error",
                 toast: true,
                 timer: 6000,
@@ -130,22 +151,36 @@ export const AuthProvider = ({ children }) => {
 
     const updateProfile = async (profileData) => {
         try {
-            const response = await axios.put("http://127.0.0.1:8000/api/profile/", profileData, {
-                headers: {
-                    "Content-Type": "aplication/json",
-                    Authorization: `Bearer ${authTokens.access}`,
-                },
-                body: JSON.stringify(profileData),
-            });
-
-            const updatedUserData = response.data;
-
-            // Update `user` state in AuthContext to reflect changes
+            let formData;
+    
+            if (profileData.image) {
+                formData = new FormData();
+                formData.append("full_name", profileData.full_name);
+                formData.append("bio", profileData.bio);
+                formData.append("image", profileData.image); // image field
+            } else {
+                formData = { ...profileData }; // No image, send as JSON
+            }
+    
+            const headers = {
+                Authorization: `Bearer ${authTokens.access}`,
+            };
+    
+            if (!(formData instanceof FormData)) {
+                headers["Content-Type"] = "application/json";
+            }
+    
+            const response = await axios.put(
+                "http://127.0.0.1:8000/api/profile/update/",
+                formData,
+                { headers }
+            );
+    
             setUser((prevUser) => ({
                 ...prevUser,
-                ...updatedUserData,
+                ...response.data,
             }));
-
+    
             swal.fire({
                 title: "Profile Updated Successfully",
                 icon: "success",
@@ -156,11 +191,11 @@ export const AuthProvider = ({ children }) => {
                 showConfirmButton: false,
             });
         } catch (error) {
-            console.error("Profile update failed:", error);
-
+            console.error("Profile update failed:", error.response?.data || error);
+    
             swal.fire({
                 title: "Failed to Update Profile",
-                text: "An error occurred while updating the profile. Please try again.",
+                text: error.response?.data?.detail || "Please try again.",
                 icon: "error",
                 toast: true,
                 timer: 6000,

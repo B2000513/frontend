@@ -50,7 +50,7 @@ function Registerpage() {
                               style={{ color: "#ff6219" }}
                             />
                             <span className="h2 fw-bold mb-0">
-                              Welcome to <b>Desphixs👋</b>
+                              Welcome to <b>👋</b>
                             </span>
                           </div>
                           <h5
@@ -138,7 +138,7 @@ function Registerpage() {
           >
             © 2019 - till date Copyright:
             <a className="text-dark" href="https://mdbootstrap.com/">
-              desphixs.com
+              
             </a>
           </div>
           {/* Copyright */}

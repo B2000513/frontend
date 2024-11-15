@@ -9,7 +9,7 @@ import Registerpage from './views/Registerpage'
 import Loginpage from './views/Loginpage'
 import Dashboard from './views/Dashboard'
 import Navbar from './views/Navbar'
-import ProfileSettings from './views/Profilesetting'
+import ProfileSettings from './views/ProfileSetting'
 import PasswordResetConfirm from './views/PasswordResetConfirm'
 import PasswordResetRequest from './views/PasswordResetRequest'
 
