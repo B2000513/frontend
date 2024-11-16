@@ -109,7 +109,8 @@ export const AuthProvider = ({ children }) => {
             console.log("Registration response data:", data);
     
             if (response.status === 201) {
-                history.push("/login");  // Redirect on successful registration
+                // Redirect on successful registration
+                history.push("/login");
                 swal.fire({
                     title: "Registration Successful, Login Now",
                     icon: "success",
@@ -120,11 +121,19 @@ export const AuthProvider = ({ children }) => {
                     showConfirmButton: false,
                 });
             } else {
-                // Log the specific error message returned by the backend
-                console.error("Error:", data);
+                // Handle specific validation errors returned by the backend
+                let errorMessage = "Please check your inputs and try again.";
+                if (data.email) {
+                    errorMessage = data.email[0];
+                } else if (data.password) {
+                    errorMessage = data.password[0];
+                } else if (data.non_field_errors) {
+                    errorMessage = data.non_field_errors[0];
+                }
+    
                 swal.fire({
-                    title: "An Error Occurred: " + response.status,
-                    text: data.detail || "Please check your inputs and try again.",
+                    title: "An Error Occurred",
+                    text: errorMessage,
                     icon: "error",
                     toast: true,
                     timer: 6000,
